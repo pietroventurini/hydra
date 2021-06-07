@@ -14,17 +14,19 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xfff3f7fb)
-      ),
+          primarySwatch: Colors.blue,
+          scaffoldBackgroundColor: const Color(0xfff3f7fb)),
       restorationScopeId: 'root',
-      home: MainPage(title: 'Flutter Demo Home Page', restorationId: 'bottom_navigation_labels_demo'),
+      home: MainPage(
+          title: 'Flutter Demo Home Page',
+          restorationId: 'bottom_navigation_labels_demo'),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
-  MainPage({Key key, this.title, @required this.restorationId}) : super(key: key);
+  MainPage({Key key, this.title, @required this.restorationId})
+      : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -78,18 +80,14 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    
+
     final icons = List<IconData>.unmodifiable([
-      Icons.home,
+      Icons.home_rounded,
       Icons.show_chart_rounded,
-      Icons.account_circle_rounded
+      Icons.account_circle_rounded,
     ]);
 
-    final labels = List<String>.unmodifiable([
-      "Home",
-      "Stats",
-      "Account"
-    ]);
+    final labels = List<String>.unmodifiable(["Home", "Stats", "Account"]);
 
     final _screens = List<Widget>.unmodifiable([
       HomeTab(),
@@ -98,24 +96,55 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
     ]);
 
     return Scaffold(
-      body: _screens[_navIndex.value],
-      bottomNavigationBar: MobileNavBar(
+        body: _screens[_navIndex.value],
+        bottomNavigationBar: MobileNavBar(
           activeIndex: _navIndex.value,
           icons: icons,
           labels: labels,
           onTap: _onItemTapped,
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _openNewRecordMenu(),
+          tooltip: "New check-in",
+          child: const Icon(Icons.add),
+        ),
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.centerDocked);
+  }
+
+  void _openNewRecordMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24.0),
+          topRight: Radius.circular(24.0),
+        ),
       ),
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Container(
+          height: MediaQuery.of(context).copyWith().size.height * 0.85,
+          child: Center(
+            child: Column(
+              children: [],
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-class MobileNavBar extends  StatelessWidget {
-  MobileNavBar({
-    @required this.activeIndex,
-    @required this.icons,
-    @required this.labels,
-    @required this.onTap
-  }) : assert(activeIndex < icons.length), assert(icons.length == labels.length);
+class MobileNavBar extends StatelessWidget {
+  MobileNavBar(
+      {@required this.activeIndex,
+      @required this.icons,
+      @required this.labels,
+      @required this.onTap})
+      : assert(activeIndex < icons.length),
+        assert(icons.length == labels.length);
 
   final int activeIndex;
   final List<IconData> icons;
@@ -124,16 +153,11 @@ class MobileNavBar extends  StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-
     return BottomNavigationBar(
       showUnselectedLabels: false,
       items: <BottomNavigationBarItem>[
-        for (var i=0; i < icons.length; i++)
-          BottomNavigationBarItem(
-            icon: Icon(icons[i]),
-            label: labels[i]
-          )
+        for (var i = 0; i < icons.length; i++)
+          BottomNavigationBarItem(icon: Icon(icons[i]), label: labels[i])
       ],
       currentIndex: activeIndex,
       onTap: onTap,
