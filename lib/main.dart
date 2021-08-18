@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hydra/account.dart';
 import 'package:hydra/home.dart';
+import 'package:hydra/newrecord_menu.dart';
 import 'package:hydra/stats.dart';
 
 void main() {
@@ -14,18 +15,19 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-          primarySwatch: Colors.blue,
-          scaffoldBackgroundColor: const Color(0xfff3f7fb)),
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xfff3f7fb)),
       restorationScopeId: 'root',
       home: MainPage(
-          title: 'Flutter Demo Home Page',
-          restorationId: 'bottom_navigation_labels_demo'),
+        title: 'Flutter Demo Home Page',
+        restorationId: 'bottom_navigation_labels_demo'
+      ),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
-  MainPage({Key key, this.title, @required this.restorationId})
+  MainPage({Key? key, this.title, required this.restorationId})
       : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
@@ -37,7 +39,7 @@ class MainPage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
+  final String? title;
   final String restorationId;
 
   @override
@@ -48,10 +50,10 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
   final RestorableInt _navIndex = RestorableInt(0);
 
   @override
-  String get restorationId => widget.restorationId;
+  String? get restorationId => widget.restorationId;
 
   @override
-  void restoreState(RestorationBucket oldBucket, bool initialRestore) {
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
     registerForRestoration(_navIndex, 'bottom_navigation_tab_index');
   }
 
@@ -126,23 +128,20 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
       builder: (BuildContext context) {
         return Container(
           height: MediaQuery.of(context).copyWith().size.height * 0.85,
-          child: Center(
-            child: Column(
-              children: [],
-            ),
-          ),
+          child: NewRecordMenu(),
         );
       },
     );
   }
 }
+          
 
 class MobileNavBar extends StatelessWidget {
   MobileNavBar(
-      {@required this.activeIndex,
-      @required this.icons,
-      @required this.labels,
-      @required this.onTap})
+      {required this.activeIndex,
+      required this.icons,
+      required this.labels,
+      required this.onTap})
       : assert(activeIndex < icons.length),
         assert(icons.length == labels.length);
 
