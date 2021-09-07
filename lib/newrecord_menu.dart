@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'package:hydra/model/record_model.dart';
+
 class NewRecordMenu extends StatefulWidget {
+  final int id;
+  const NewRecordMenu(this.id);
 
   @override
   State<StatefulWidget> createState() => _NewRecordMenuState();
 }
   
 class _NewRecordMenuState extends State<NewRecordMenu> {
+  String? _title;
   double _amount = 200;
   final _formKey = GlobalKey<FormState>();
-  DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedTime = TimeOfDay.now();
+  DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
   TextEditingController dateInputCtrl = TextEditingController(); 
   TextEditingController timeInputCtrl = TextEditingController(); 
 
   @override
   void initState() {
     super.initState();
-    dateInputCtrl.text = DateFormat.MMMd().format(selectedDate);
-    timeInputCtrl.text = DateFormat.Hm().format(selectedDate);
+    dateInputCtrl.text = DateFormat.MMMd().format(_selectedDate);
+    timeInputCtrl.text = DateFormat.Hm().format(_selectedDate);
   }
 
   Future<DateTime?> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: _selectedDate,
       firstDate: DateTime(2019, 1),
       lastDate: DateTime(2100)
     );
-    if (picked != null && picked != selectedDate) {
+    if (picked != null && picked != _selectedDate) {
       setState(() {
-        selectedDate = picked;
+        _selectedDate = picked;
         dateInputCtrl.text = DateFormat.MMMd().format(picked);
       });
     }
@@ -40,11 +45,11 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: selectedTime
+      initialTime: _selectedTime
     );
-    if (picked != null && picked != selectedTime) {
+    if (picked != null && picked != _selectedTime) {
       setState(() {
-        selectedTime = picked;
+        _selectedTime = picked;
         timeInputCtrl.text = picked.format(context);
       });
     }
@@ -60,66 +65,112 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
-              onPressed: () {},
+              onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.cancel),
             ),
           ),
           Center(
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    DateTimeContainer(
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.6,
                       child: TextFormField(
-                        controller: dateInputCtrl,
-                        cursorColor: Colors.black,
                         decoration: InputDecoration(
                           icon: const Icon(
-                            Icons.calendar_today_rounded,
+                            Icons.text_fields,
                             color: Colors.black,
                           ),
-                          hintText: "Date",
-                          border: InputBorder.none,
+                          hintText: "Choose a Title",
                         ),
-                        onTap:() {
-                          FocusScope.of(context).requestFocus(new FocusNode());
-                          _selectDate(context);
-                        },
                       ),
                     ),
-                    DateTimeContainer(
-                      child: TextFormField(
-                        controller: timeInputCtrl,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          icon: const Icon(
-                            Icons.access_time_rounded,
-                            color: Colors.black,
+                  ),
+                  Row(
+                    children: <Widget>[
+                      DateTimeContainer(
+                        child: TextFormField(
+                          controller: dateInputCtrl,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            icon: const Icon(
+                              Icons.calendar_today_rounded,
+                              color: Colors.black,
+                            ),
+                            hintText: "Date",
+                            border: InputBorder.none,
                           ),
-                          hintText: "Time",
-                          border: InputBorder.none,
+                          onTap:() {
+                            FocusScope.of(context).requestFocus(new FocusNode());
+                            _selectDate(context);
+                          },
                         ),
-                        onTap:() {
-                          FocusScope.of(context).requestFocus(new FocusNode());
-                          _selectTime(context);
-                        }
                       ),
-                    ),         
-                  ],
-                ),
-                Text(
-                  _amount.toInt().toString() + " ml",
-                  style: Theme.of(context).textTheme.headline5
-                ),
-                Slider(
-                  value: _amount,
-                  min: 0,
-                  max: 1000,
-                  onChanged: (double value) { 
-                    setState(() => _amount = value);
-                  },
-                ),
-              ],
+                      DateTimeContainer(
+                        child: TextFormField(
+                          controller: timeInputCtrl,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            icon: const Icon(
+                              Icons.access_time_rounded,
+                              color: Colors.black,
+                            ),
+                            hintText: "Time",
+                            border: InputBorder.none,
+                          ),
+                          onTap:() {
+                            FocusScope.of(context).requestFocus(new FocusNode());
+                            _selectTime(context);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Select a valid time";
+                            }
+                            return null;
+                          },
+                        ),
+                      ),         
+                    ],
+                  ),
+                  Text(
+                    _amount.toInt().toString() + " ml",
+                    style: Theme.of(context).textTheme.headline5
+                  ),
+                  Slider(
+                    value: _amount,
+                    min: 0,
+                    max: 1000,
+                    onChanged: (double value) { 
+                      setState(() => _amount = value);
+                    },
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        // TODO post record to server
+                        // ...
+                        final Record record = new Record(
+                          id: widget.id,
+                          timestamp: new DateTime(
+                            _selectedDate.year,
+                            _selectedDate.month,
+                            _selectedDate.day,
+                            _selectedTime.hour,
+                            _selectedTime.minute),
+                          quantity: _amount.toInt(),
+                        );
+                        
+                        Navigator.pop(context, record);
+                      }
+                    },
+                    child: const Text("Create"),
+                  )
+                ],
+              ),
             ),
           ),
         ]

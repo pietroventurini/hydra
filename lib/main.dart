@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hydra/account.dart';
 import 'package:hydra/home.dart';
+import 'package:hydra/model/record_model.dart';
 import 'package:hydra/newrecord_menu.dart';
 import 'package:hydra/stats.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -89,61 +91,37 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
       Icons.account_circle_rounded,
     ]);
 
-    final labels = List<String>.unmodifiable(["Home", "Stats", "Account"]);
+    final _labels = List<String>.unmodifiable(["Home", "Stats", "Account"]);
 
     final _screens = List<Widget>.unmodifiable([
-      HomeTab(),
+      ChangeNotifierProvider(
+        create: (context) => Records(),
+        child: HomeTab(),
+      ),
       StatsTab(),
       AccountTab(),
     ]);
 
     return Scaffold(
-        body: _screens[_navIndex.value],
-        bottomNavigationBar: MobileNavBar(
-          activeIndex: _navIndex.value,
-          icons: icons,
-          labels: labels,
-          onTap: _onItemTapped,
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _openNewRecordMenu(),
-          tooltip: "New check-in",
-          child: const Icon(Icons.add),
-        ),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.centerDocked);
-  }
-
-  void _openNewRecordMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.0),
-          topRight: Radius.circular(24.0),
-        ),
+      body: _screens[_navIndex.value],
+      bottomNavigationBar: MobileNavBar(
+        activeIndex: _navIndex.value,
+        icons: icons,
+        labels: _labels,
+        onTap: _onItemTapped,
       ),
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return Container(
-          height: MediaQuery.of(context).copyWith().size.height * 0.85,
-          child: NewRecordMenu(),
-        );
-      },
     );
   }
-}
-          
+}         
 
 class MobileNavBar extends StatelessWidget {
-  MobileNavBar(
-      {required this.activeIndex,
-      required this.icons,
-      required this.labels,
-      required this.onTap})
-      : assert(activeIndex < icons.length),
-        assert(icons.length == labels.length);
+  MobileNavBar({
+    required this.activeIndex,
+    required this.icons,
+    required this.labels,
+    required this.onTap})
+    : assert(activeIndex < icons.length),
+      assert(icons.length == labels.length);
 
   final int activeIndex;
   final List<IconData> icons;

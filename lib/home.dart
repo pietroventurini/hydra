@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hydra/model/record_model.dart';
+import 'package:hydra/newrecord_menu.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({Key? key}) : super(key: key);
@@ -50,7 +54,7 @@ class HomeTab extends StatelessWidget {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                          text: "1200",
+                          text: Provider.of<Records>(context).dailyAmount().toString(),
                           style: TextStyle(
                             fontSize: 28,
                             color: Colors.black87,
@@ -133,43 +137,160 @@ class HomeTab extends StatelessWidget {
     var historyTab = Expanded(
       child: Container(
         //color: Colors.white,
-        margin: EdgeInsets.only(left: 26, top: 30),
-        child: ListView.builder(
-          reverse: true,
-          itemCount: 15,
-          itemBuilder: (BuildContext context, index) {
-            return Container(
-              margin: EdgeInsets.only(bottom: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text("Time ${index + 1}"),
-                  ),
-                  Expanded(
-                    flex: 8,
-                    child: Container(
-                      color: Colors.white,
-                      height: 60,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+        margin: EdgeInsets.only(top: 20),
+        child: Consumer<Records>(
+          builder: (context, history, child) => ListView.builder(
+            itemCount: history.records.length,
+            itemBuilder: (BuildContext context, index) {
+              var record = history.records[index];
+              return RecordItem(
+                record: record,
+                onDelete: () => history.remove(record.id),
+                );
+            },
+          ),
         ),
       ),
     );
 
-    return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          progressCard,
-          //newRecordTab,
-          historyTab,
-        ],
+    void _openNewRecordMenu(int id) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.0),
+            topRight: Radius.circular(24.0),
+          ),
+        ),
+        isScrollControlled: true,
+        builder: (context) {
+          return Container(
+            height: MediaQuery.of(context).copyWith().size.height * 0.85,
+            child: NewRecordMenu(id),
+          );
+        },
+      ).then((record) {
+        if (record != null) {
+          Provider.of<Records>(context, listen: false).add(record);
+        }
+      });
+    }
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            progressCard,
+            //newRecordTab,
+            historyTab,
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openNewRecordMenu(Provider.of<Records>(context, listen: false).records.length + 1),
+        tooltip: "New check-in",
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation:
+        FloatingActionButtonLocation.endFloat,
+    );
+  }
+}
+
+class RecordItem extends StatelessWidget {
+  const RecordItem({
+    Key? key,
+    required this.record,
+    required this.onDelete,
+  }) : super(key: key);
+
+  final Record record;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: UniqueKey(),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: EdgeInsets.symmetric(vertical: 10),
+        padding: EdgeInsets.only(right: 15),
+        alignment: Alignment.centerRight,
+        color: Colors.red,
+        child: const Icon(
+          Icons.delete_rounded,
+          color: Colors.white,
+        ),
+      ),
+      onDismissed: (DismissDirection direction) {
+        var deletedRecord = Provider.of<Records>(context, listen: false).remove(record.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text(
+              "Record deleted"
+            ),
+            action: SnackBarAction(
+              label: "Undo",
+              onPressed: () {
+                Provider.of<Records>(context, listen: false).add(deletedRecord);
+              },
+            ),
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 10),
+        padding: EdgeInsets.only(left: 24),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 2,
+              child: Text(
+                DateFormat(DateFormat.HOUR24_MINUTE).format(record.timestamp),
+              ),
+            ),
+            Expanded(
+              flex: 8,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.horizontal(left: Radius.circular(18)),
+                ),
+                padding: EdgeInsets.only(left: 20),
+                height: 60,
+                child: Row(
+                  children: [
+                    Flexible(
+                      flex: 1,
+                      child: Text(
+                        record.quantity.toString() + 'ml'
+                      ),
+                    ),
+                    Flexible(
+                      flex: 2,
+                      child: Container(
+                        margin: EdgeInsets.only(left: 34),
+                        child: Text(
+                          record.title ?? '',
+                          style: TextStyle(
+                            fontFamily: 'Avenir',
+                            fontSize: 16,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
