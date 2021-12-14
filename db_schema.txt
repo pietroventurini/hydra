@@ -1,0 +1,60 @@
+
+
+users
+    usr1
+        name:
+            first: "Pietro"
+            last: "Venturini"
+        email: "pietro97venturini@gmail.com"
+        history --> collezione history
+    usr2
+        name:
+            first: "Sara"
+            last: "Safari"
+        email: "s.safari@studenti.unibs.it"
+        history --> collezione history
+
+OPZIONE 1: SUBCOLLECTIONS
+
+// la collezione `history` contiene un documento per ciascuna data che contenga almeno un record
+history
+    20211208:
+        date: "2021/12/08"
+        daily_goal_ml: 2200
+        daily_amount_drunk: 400     (va tenuta sincronizzata con i record ma è comoda per le statistiche)
+        records --> collezione records
+
+// la collezione records, contiene tutti i record di un certo giorno
+records:
+    record1:
+        title: "bicchiere d'acqua"
+        time: "08:22"   (o dividere in una mappa hour, minute)
+        quantity_ml: 300
+    record2:
+        title: "spremuta d'arancia"
+        time: "10:02" 
+        quantity_ml: 100
+
+problemi:
+1. Fatturazione per numero di letture/scritture (ogni giorno dovrei richiedere tutti i record della collezione)
+
+OPZIONE 2: NESTED DATA IN DOCUMENTS
+
+// la collezione `history` contiene un documento per ciascuna data che contenga almeno un record
+history
+    20211208:
+        date: "2021/12/08"
+        daily_goal_ml: 2200
+        daily_amount_drunk: 400     (va tenuta sincronizzata con i record ma è comoda per le statistiche)
+        records: {      (Map)
+            record1: {      (another map)
+                title: "bicchiere d'acqua"
+                time: "08:22"   (o dividere in una mappa hour, minute)
+                quantity_ml: 300
+            }
+            record2: {
+                title: "spremuta d'arancia"
+                time: "10:02"
+                quantity_ml: 100
+            }
+        }

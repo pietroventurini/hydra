@@ -1,12 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hydra/account.dart';
+import 'package:hydra/database/repository.dart';
 import 'package:hydra/home.dart';
-import 'package:hydra/model/record_model.dart';
-import 'package:hydra/newrecord_menu.dart';
+import 'package:hydra/login.dart';
+import 'package:hydra/model/records.dart';
+import 'package:hydra/services/authentication_service.dart';
 import 'package:hydra/stats.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -14,17 +21,42 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xfff3f7fb)),
-      restorationScopeId: 'root',
-      home: MainPage(
-        title: 'Flutter Demo Home Page',
-        restorationId: 'bottom_navigation_labels_demo'
+    return MultiProvider(
+      providers: [
+        Provider<AuthenticationService>(
+          create: (_) => AuthenticationService(FirebaseAuth.instance),
+        ),
+        StreamProvider(
+          create: (context) => context.read<AuthenticationService>().authStateChanges, 
+          initialData: null
+        ),
+        Provider<Repository>(
+          create: (_) => Repository(FirebaseFirestore.instance),
+        )
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          scaffoldBackgroundColor: const Color(0xfff3f7fb)),
+        restorationScopeId: 'root',
+        home: AuthenticationWrapper(),
       ),
     );
+  }
+}
+
+class AuthenticationWrapper extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final firebaseUser = context.watch<User?>();
+    if (firebaseUser != null) {
+      return MainPage(  
+        title: 'Flutter Demo Home Page',
+        restorationId: 'bottom_navigation_labels_demo'
+      );
+    }
+    return LoginPage();
   }
 }
 
@@ -98,7 +130,10 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
         create: (context) => Records(),
         child: HomeTab(),
       ),
-      StatsTab(),
+      ChangeNotifierProvider(
+        create: (context) => Records(),
+        child: StatsTab(),
+      ),
       AccountTab(),
     ]);
 

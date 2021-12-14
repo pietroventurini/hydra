@@ -26,11 +26,23 @@ dependencies:
 
   provider: ^6.0.0
 
+  # firebase plugins
+  firebase_core: "^1.10.0"
+  firebase_auth: "^3.2.0"
+  google_sign_in: "^5.2.0"
+
+  # styiling buttons to match 3rd platforms sign-in 
+  flutter_signin_button: ^2.0.0
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   intl: ^0.17.0
+  fl_chart: ^0.40.0
+
+  # plugin to use the firestore API
+  cloud_firestore: ^3.1.4
 
 dev_dependencies:
   flutter_test:

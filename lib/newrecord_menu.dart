@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:hydra/model/record_model.dart';
+import 'package:hydra/model/records.dart';
 
 class NewRecordMenu extends StatefulWidget {
   final int id;
-  const NewRecordMenu(this.id);
+  final bool edit;
+  final Record? record;
+  const NewRecordMenu({
+    required this.id, 
+    required this.edit, 
+    this.record
+  });
 
   @override
   State<StatefulWidget> createState() => _NewRecordMenuState();
@@ -13,16 +19,20 @@ class NewRecordMenu extends StatefulWidget {
   
 class _NewRecordMenuState extends State<NewRecordMenu> {
   String? _title;
-  double _amount = 200;
+  late double _amount;
   final _formKey = GlobalKey<FormState>();
-  DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
+  late DateTime _selectedDate;
+  late TimeOfDay _selectedTime;
   TextEditingController dateInputCtrl = TextEditingController(); 
   TextEditingController timeInputCtrl = TextEditingController(); 
 
   @override
   void initState() {
     super.initState();
+    _title = widget.edit ? widget.record!.title : null;
+    _amount = widget.edit ? widget.record!.quantity.toDouble() : 200;
+    _selectedDate = widget.edit ? widget.record!.timestamp : DateTime.now();
+    _selectedTime = widget.edit ? TimeOfDay.fromDateTime(widget.record!.timestamp) : TimeOfDay.now();
     dateInputCtrl.text = DateFormat.MMMd().format(_selectedDate);
     timeInputCtrl.text = DateFormat.Hm().format(_selectedDate);
   }
@@ -79,6 +89,7 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                     child: Container(
                       width: MediaQuery.of(context).size.width * 0.6,
                       child: TextFormField(
+                        initialValue: widget.edit ? widget.record!.title : null,
                         decoration: InputDecoration(
                           icon: const Icon(
                             Icons.text_fields,
@@ -86,6 +97,7 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                           ),
                           hintText: "Choose a Title",
                         ),
+                      onChanged: (title) => _title = title,
                       ),
                     ),
                   ),
@@ -162,12 +174,13 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                             _selectedTime.hour,
                             _selectedTime.minute),
                           quantity: _amount.toInt(),
+                          title: _title,
                         );
                         
                         Navigator.pop(context, record);
                       }
                     },
-                    child: const Text("Create"),
+                    child: Text(widget.edit ? "Edit" : "Create"),
                   )
                 ],
               ),

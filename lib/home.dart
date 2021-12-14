@@ -1,30 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:hydra/model/record_model.dart';
+import 'package:hydra/database/repository.dart';
+import 'package:hydra/history_list.dart';
+import 'package:hydra/model/records.dart';
 import 'package:hydra/newrecord_menu.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:hydra/decorations/card.dart' as Decorations;
 
 class HomeTab extends StatelessWidget {
   const HomeTab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var cardDecoration = BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.all(Radius.circular(24)),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(.23),
-          blurRadius: 30,
-          offset: Offset(0, 10),
-        )
-      ],
-    );
 
     var progressCard = Container(
       height: 180,
       margin: EdgeInsets.only(top: 24, left: 24, right: 24),
-      decoration: cardDecoration,
+      decoration: Decorations.cardDecoration,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -88,69 +80,20 @@ class HomeTab extends StatelessWidget {
       ),
     );
 
-    var newRecordTab = Container(
-      margin: EdgeInsets.only(top: 20, left: 26, right: 26),
-      decoration: cardDecoration,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Drink check-in",
-                  style: TextStyle(
-                    fontFamily: 'Avenir',
-                    fontSize: 20,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      height: 50,
-                      width: 100,
-                      child: TextFormField(
-                        initialValue: "20:37",
-                        decoration: InputDecoration(
-                          icon: Icon(Icons.schedule_rounded),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Expanded(
-              flex: 2,
-              child: Container(
-                color: Colors.red,
-              ),
-            ),
-          ],
-        ),
+    var historyTab = Expanded(
+      child: HistoryList(
+        records: Provider.of<Records>(context, listen: true).recordsOfToday(),
+        onRecordDeleted: (id) => Provider.of<Records>(context, listen: false).remove(id),
+        onRecordUpdated: (id, newRecord) => Provider.of<Records>(context, listen: false).updateRecord(id, newRecord),
+        onUndoDelete: (oldRecord) => Provider.of<Records>(context, listen: false).add(oldRecord),
       ),
     );
 
-    var historyTab = Expanded(
-      child: Container(
-        //color: Colors.white,
-        margin: EdgeInsets.only(top: 20),
-        child: Consumer<Records>(
-          builder: (context, history, child) => ListView.builder(
-            itemCount: history.records.length,
-            itemBuilder: (BuildContext context, index) {
-              var record = history.records[index];
-              return RecordItem(
-                record: record,
-                onDelete: () => history.remove(record.id),
-                );
-            },
-          ),
-        ),
-      ),
+    var getRecordBtn = ElevatedButton(
+      onPressed: () => {
+        Provider.of<Repository>(context, listen: false).getTodaysRecords()
+      }, 
+      child: Text("get records")
     );
 
     void _openNewRecordMenu(int id) {
@@ -167,7 +110,10 @@ class HomeTab extends StatelessWidget {
         builder: (context) {
           return Container(
             height: MediaQuery.of(context).copyWith().size.height * 0.85,
-            child: NewRecordMenu(id),
+            child: NewRecordMenu(
+              id: id,
+              edit: false
+            ),
           );
         },
       ).then((record) {
@@ -184,12 +130,13 @@ class HomeTab extends StatelessWidget {
           children: [
             progressCard,
             //newRecordTab,
+            getRecordBtn,
             historyTab,
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openNewRecordMenu(Provider.of<Records>(context, listen: false).records.length + 1),
+        onPressed: () => _openNewRecordMenu(Provider.of<Records>(context, listen: false).recordsOfToday().length + 1),
         tooltip: "New check-in",
         child: const Icon(Icons.add),
       ),
@@ -211,6 +158,35 @@ class RecordItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    void _openEditRecordMenu() {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.0),
+            topRight: Radius.circular(24.0),
+          ),
+        ),
+        isScrollControlled: true,
+        builder: (context) {
+          return Container(
+            height: MediaQuery.of(context).copyWith().size.height * 0.85,
+            child: NewRecordMenu(
+              id: record.id,
+              edit: true,
+              record: record,
+            ),
+          );
+        },
+      ).then((record) {
+        if (record != null) {
+          Provider.of<Records>(context, listen: false).updateRecord(record.id, record); // LISTEN = FALSE? 
+        }
+      });
+    }
+
     return Dismissible(
       key: UniqueKey(),
       direction: DismissDirection.endToStart,
@@ -255,37 +231,40 @@ class RecordItem extends StatelessWidget {
             ),
             Expanded(
               flex: 8,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.horizontal(left: Radius.circular(18)),
-                ),
-                padding: EdgeInsets.only(left: 20),
-                height: 60,
-                child: Row(
-                  children: [
-                    Flexible(
-                      flex: 1,
-                      child: Text(
-                        record.quantity.toString() + 'ml'
-                      ),
-                    ),
-                    Flexible(
-                      flex: 2,
-                      child: Container(
-                        margin: EdgeInsets.only(left: 34),
+              child: GestureDetector(
+                onLongPress: _openEditRecordMenu,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.horizontal(left: Radius.circular(18)),
+                  ),
+                  padding: EdgeInsets.only(left: 20),
+                  height: 60,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        flex: 1,
                         child: Text(
-                          record.title ?? '',
-                          style: TextStyle(
-                            fontFamily: 'Avenir',
-                            fontSize: 16,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w600,
+                          record.quantity.toString() + 'ml'
+                        ),
+                      ),
+                      Flexible(
+                        flex: 2,
+                        child: Container(
+                          margin: EdgeInsets.only(left: 34),
+                          child: Text(
+                            record.title ?? '',
+                            style: TextStyle(
+                              fontFamily: 'Avenir',
+                              fontSize: 16,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
