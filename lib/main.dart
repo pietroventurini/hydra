@@ -6,6 +6,7 @@ import 'package:hydra/database/repository.dart';
 import 'package:hydra/home.dart';
 import 'package:hydra/login.dart';
 import 'package:hydra/model/records.dart';
+import 'package:hydra/model/weekly_history.dart';
 import 'package:hydra/services/authentication_service.dart';
 import 'package:hydra/stats.dart';
 import 'package:provider/provider.dart';
@@ -25,14 +26,12 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider<AuthenticationService>(
           create: (_) => AuthenticationService(FirebaseAuth.instance),
+          
         ),
         StreamProvider(
           create: (context) => context.read<AuthenticationService>().authStateChanges, 
           initialData: null
         ),
-        Provider<Repository>(
-          create: (_) => Repository(FirebaseFirestore.instance),
-        )
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
@@ -126,12 +125,23 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
     final _labels = List<String>.unmodifiable(["Home", "Stats", "Account"]);
 
     final _screens = List<Widget>.unmodifiable([
-      ChangeNotifierProvider(
-        create: (context) => Records(),
+      StreamProvider<Records>(
+        create: (_) => Repository(FirebaseFirestore.instance).todaysRecordsStream(),
+        initialData: Records(
+          date: DateTime.now(),
+          records: <Record>[]
+        ),
         child: HomeTab(),
       ),
-      ChangeNotifierProvider(
-        create: (context) => Records(),
+      // qui dovremmo passare una lista di records (una settimana) invece che un'istanza di record
+      // potremmo creare uno stream in repository che restituisca tale lista con un'apposita query
+      // e usare uno stream provider anche quì
+      // nel momento in cui seleziono un'altra settimana
+      ChangeNotifierProvider<WeeklyHistory>(
+        create: (context) => WeeklyHistory(
+          date: DateTime.now(),
+          weeklyRecords: <Records>[]
+        ),
         child: StatsTab(),
       ),
       AccountTab(),

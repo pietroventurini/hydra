@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:hydra/model/records.dart';
 
 class NewRecordMenu extends StatefulWidget {
-  final int id;
+  final String id;
   final bool edit;
   final Record? record;
   const NewRecordMenu({
@@ -165,7 +165,7 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                       if (_formKey.currentState!.validate()) {
                         // TODO post record to server
                         // ...
-                        final Record record = new Record(
+                        final Record newRecord = new Record(
                           id: widget.id,
                           timestamp: new DateTime(
                             _selectedDate.year,
@@ -177,7 +177,7 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                           title: _title,
                         );
                         
-                        Navigator.pop(context, record);
+                        Navigator.pop(context, newRecord);
                       }
                     },
                     child: Text(widget.edit ? "Edit" : "Create"),

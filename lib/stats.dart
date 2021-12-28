@@ -1,30 +1,39 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:hydra/database/repository.dart';
 import 'package:hydra/decorations/card.dart' as Decorations;
 import 'package:hydra/history_list.dart';
 import 'package:hydra/model/records.dart';
 import 'package:hydra/model/stats_date.dart';
+import 'package:hydra/model/weekly_history.dart';
+import 'package:hydra/util/date_utils.dart';
 import 'dart:math';
 
 import 'package:provider/provider.dart';
 
-class StatsTab extends StatelessWidget {
+class StatsTab extends StatefulWidget {
   const StatsTab({Key? key}) : super(key: key);
 
   @override
+  State<StatsTab> createState() => _StatsTabState();
+}
+
+class _StatsTabState extends State<StatsTab> {
+  @override
   Widget build(BuildContext context) {
 
+    final weeklyHistory = Provider.of<WeeklyHistory>(context);
+    
+
     return SafeArea(
-      child: ChangeNotifierProvider(
-        create: (context) => StatsDate(DateTime.now()),
-        child: Container(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              ChartCard(),
-              HistoryListContainer(),
-            ],
-          ),
+      child: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            ChartCard(),
+            HistoryListContainer(),
+          ],
         ),
       ),
     );
@@ -164,6 +173,8 @@ class WeekController extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
+    WeeklyHistory weeklyHistory = Provider.of<WeeklyHistory>(context);
+
     return Container(
       width: 250,
       decoration: BoxDecoration(
@@ -180,7 +191,9 @@ class WeekController extends StatelessWidget{
               tooltip: "Previous week",
               color: Colors.white,
               onPressed: () {
-                Provider.of<StatsDate>(context, listen: false).backOneWeek();
+                weeklyHistory.updateDate(CustomDateUtils.backOneWeek(weeklyHistory.date));
+                // get new records
+                // update records
               },
             ),
           ),
@@ -190,16 +203,12 @@ class WeekController extends StatelessWidget{
               onTap: () => _selectDate(context),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: Consumer<StatsDate>(
-                  builder: (context, date, child) {
-                    return Text(
-                      date.formatWeekRange(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    );
-                  }
+                child: Text(
+                  CustomDateUtils.formatWeekRange(weeklyHistory.date),
+                    style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -211,7 +220,8 @@ class WeekController extends StatelessWidget{
               tooltip: "Next week",
               color: Colors.white,
               onPressed: () {
-                Provider.of<StatsDate>(context, listen: false).forwardOneWeek();
+                weeklyHistory.updateDate(CustomDateUtils.forwardOneWeek(weeklyHistory.date));
+                //Provider.of<StatsDate>(context, listen: false).forwardOneWeek();
               }, 
             ),
           ),
@@ -223,12 +233,14 @@ class WeekController extends StatelessWidget{
   Future<DateTime?> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: Provider.of<StatsDate>(context, listen: false).date,
+      initialDate: Provider.of<WeeklyHistory>(context, listen: false).date, //Provider.of<StatsDate>(context, listen: false).date,
       firstDate: DateTime(2019, 1),
       lastDate: DateTime(2100)
     );
-    if (picked != null && picked != Provider.of<StatsDate>(context, listen: false).date) {
-      Provider.of<StatsDate>(context, listen: false).date = picked;
+    if (picked != null && picked != Provider.of<WeeklyHistory>(context, listen: false).date) {
+      Provider.of<WeeklyHistory>(context, listen: false).updateDate(picked);
+      Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(picked);
+      //Provider.of<StatsDate>(context, listen: false).date = picked;
     }
   }
 }
@@ -239,15 +251,15 @@ class HistoryListContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Records history = Provider.of<WeeklyHistory>(context).historyOfSelectedDate();
     return Expanded(
       child: Container(
-        child: HistoryList(
-          records: Provider.of<Records>(context, listen: true).recordsOf(
-            Provider.of<StatsDate>(context, listen: true).date
-          ),
-          onRecordDeleted: (id) => Provider.of<Records>(context, listen: false).remove(id),
-          onRecordUpdated: (id, newRecord) => Provider.of<Records>(context, listen: false).updateRecord(id, newRecord),
-          onUndoDelete: (oldRecord) => Provider.of<Records>(context, listen: false).add(oldRecord),
+        child: HistoryList( 
+          // qui serve un change notifier provider che fornisca i record della data selezionata al widget
+          history: history,
+          onRecordDeleted: (Record record) => history.remove(record.id),
+          onRecordUpdated: (Record oldRecord, Record updatedRecord) => history.updateRecord(oldRecord.id, updatedRecord),
+          onUndoDelete: (Record deletedRecord) => history.add(deletedRecord),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hydra/database/repository.dart';
 import 'package:hydra/history_list.dart';
@@ -12,6 +13,9 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final history = Provider.of<Records>(context);
+    final repository = Repository(FirebaseFirestore.instance);
 
     var progressCard = Container(
       height: 180,
@@ -46,7 +50,7 @@ class HomeTab extends StatelessWidget {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                          text: Provider.of<Records>(context).dailyAmount().toString(),
+                          text: history.progressMl.toString(),
                           style: TextStyle(
                             fontSize: 28,
                             color: Colors.black87,
@@ -54,7 +58,7 @@ class HomeTab extends StatelessWidget {
                           ),
                         ),
                         TextSpan(
-                          text: "/2000ml",
+                          text: "/" + history.goalMl.toString() + "ml",
                         ),
                       ],
                     ),
@@ -82,21 +86,18 @@ class HomeTab extends StatelessWidget {
 
     var historyTab = Expanded(
       child: HistoryList(
-        records: Provider.of<Records>(context, listen: true).recordsOfToday(),
-        onRecordDeleted: (id) => Provider.of<Records>(context, listen: false).remove(id),
-        onRecordUpdated: (id, newRecord) => Provider.of<Records>(context, listen: false).updateRecord(id, newRecord),
-        onUndoDelete: (oldRecord) => Provider.of<Records>(context, listen: false).add(oldRecord),
+        history: history, // le prossime 3 funzioni vanno sostituite con chiamate a firestore (creare appositi metodi nella classe repository)
+        //onRecordDeleted: (id) => Provider.of<Records>(context, listen: false).remove(id),
+        //onRecordUpdated: (id, newRecord) => Provider.of<Records>(context, listen: false).updateRecord(id, newRecord),
+        //onUndoDelete: (oldRecord) => Provider.of<Records>(context, listen: false).add(oldRecord),
+
+        onRecordDeleted: (record) => repository.removeRecord(record),
+        onRecordUpdated: (oldRecord, updatedRecord) => repository.updateRecord(oldRecord, updatedRecord),
+        onUndoDelete: (deletedRecord) => repository.addRecord(deletedRecord),
       ),
     );
 
-    var getRecordBtn = ElevatedButton(
-      onPressed: () => {
-        Provider.of<Repository>(context, listen: false).getTodaysRecords()
-      }, 
-      child: Text("get records")
-    );
-
-    void _openNewRecordMenu(int id) {
+    void _openNewRecordMenu() {
       showModalBottomSheet(
         context: context,
         backgroundColor: Colors.white,
@@ -111,14 +112,16 @@ class HomeTab extends StatelessWidget {
           return Container(
             height: MediaQuery.of(context).copyWith().size.height * 0.85,
             child: NewRecordMenu(
-              id: id,
-              edit: false
+              id: history.getIdForNewRecord(),
+              edit: false,
             ),
           );
         },
       ).then((record) {
         if (record != null) {
-          Provider.of<Records>(context, listen: false).add(record);
+          // repo.add record
+          repository.addRecord(record);
+          //Provider.of<Records>(context, listen: false).add(record);
         }
       });
     }
@@ -130,13 +133,13 @@ class HomeTab extends StatelessWidget {
           children: [
             progressCard,
             //newRecordTab,
-            getRecordBtn,
+            //getRecordBtn,
             historyTab,
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openNewRecordMenu(Provider.of<Records>(context, listen: false).recordsOfToday().length + 1),
+        onPressed: () => _openNewRecordMenu(),
         tooltip: "New check-in",
         child: const Icon(Icons.add),
       ),
@@ -146,7 +149,7 @@ class HomeTab extends StatelessWidget {
   }
 }
 
-class RecordItem extends StatelessWidget {
+/*class RecordItem extends StatelessWidget {
   const RecordItem({
     Key? key,
     required this.record,
@@ -180,9 +183,11 @@ class RecordItem extends StatelessWidget {
             ),
           );
         },
-      ).then((record) {
-        if (record != null) {
-          Provider.of<Records>(context, listen: false).updateRecord(record.id, record); // LISTEN = FALSE? 
+      ).then((updatedRecord) {
+        if (updatedRecord != null) {
+          Repository(FirebaseFirestore.instance).updateRecord(record, updatedRecord);
+
+          //Provider.of<Records>(context, listen: false).updateRecord(record.id, record); // LISTEN = FALSE? 
         }
       });
     }
@@ -201,7 +206,7 @@ class RecordItem extends StatelessWidget {
         ),
       ),
       onDismissed: (DismissDirection direction) {
-        var deletedRecord = Provider.of<Records>(context, listen: false).remove(record.id);
+        var deletedRecord = Provider.of<Records>(context, listen: false).remove(record.id.toString());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
@@ -232,7 +237,7 @@ class RecordItem extends StatelessWidget {
             Expanded(
               flex: 8,
               child: GestureDetector(
-                onLongPress: _openEditRecordMenu,
+                onLongPress: () => _openEditRecordMenu(),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -273,4 +278,4 @@ class RecordItem extends StatelessWidget {
       ),
     );
   }
-}
+} */

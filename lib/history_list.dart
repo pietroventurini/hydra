@@ -6,13 +6,13 @@ import 'package:intl/intl.dart';
 class HistoryList extends StatelessWidget {
   const HistoryList({
     Key? key,
-    required this.records,
+    required this.history,
     required this.onRecordUpdated,
     required this.onRecordDeleted,
     required this.onUndoDelete,
   });
 
-  final List<Record> records;
+  final Records history;
   final Function onRecordUpdated;
   final Function onRecordDeleted;
   final Function onUndoDelete;
@@ -23,14 +23,14 @@ class HistoryList extends StatelessWidget {
     return Container(
       //color: Colors.white,
       child: ListView.builder(
-        itemCount: records.length,
+        itemCount: history.records.length,
         itemBuilder: (BuildContext context, index) {
-          var record = records[index];
+          var record = history.records[index];
           return RecordItem(
             record: record,
-            onDelete: () => onRecordDeleted(record.id),
-            onUpdate: (newRecord) => onRecordUpdated(record.id, newRecord),
-            onUndoDelete: (oldRecord) => onUndoDelete(oldRecord),
+            onDelete: onRecordDeleted,
+            onUpdate: onRecordUpdated,
+            onUndoDelete: onUndoDelete,
           );
         },
       ),
@@ -78,7 +78,7 @@ class RecordItem extends StatelessWidget {
         },
       ).then((newRecord) {
         if (newRecord != null) {
-          onUpdate(newRecord);
+          onUpdate(record, newRecord);
         }
       });
     }
@@ -97,7 +97,8 @@ class RecordItem extends StatelessWidget {
         ),
       ),
       onDismissed: (DismissDirection direction) {
-        var deletedRecord = onDelete();
+        //var deletedRecord = onDelete();
+        onDelete(record);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
@@ -106,7 +107,7 @@ class RecordItem extends StatelessWidget {
             ),
             action: SnackBarAction(
               label: "Undo",
-              onPressed: () => onUndoDelete(deletedRecord),
+              onPressed: () => onUndoDelete(record),
             ),
           ),
         );
