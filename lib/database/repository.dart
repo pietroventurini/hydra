@@ -37,8 +37,13 @@ class Repository {
             isLessThanOrEqualTo: endOfWeek)
       .get();
     
-    print(queryResultJson);
-    return WeeklyHistory(date: date, weeklyRecords: <Records>[]);
+    List<Map<String, dynamic>> docsJson = [];
+    for (QueryDocumentSnapshot<Map<String, dynamic>> doc in queryResultJson.docs) {
+      docsJson.add(doc.data());
+    }
+    
+    print("I received data from firestore");
+    return WeeklyHistory.fromMap(docsJson, date);
   }
 
   Future<Records> historyOfDay(DateTime date) async {
@@ -142,7 +147,4 @@ class Repository {
       return addRecord(updatedRecord);
     }
   }
-
-
-
 }

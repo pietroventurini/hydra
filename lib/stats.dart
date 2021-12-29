@@ -20,20 +20,33 @@ class StatsTab extends StatefulWidget {
 }
 
 class _StatsTabState extends State<StatsTab> {
+
+
   @override
   Widget build(BuildContext context) {
+/*
+    FutureProvider<WeeklyHistory>(
+      create: (_) => Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(DateTime.now()),
+      initialData: WeeklyHistory(
+        date: DateTime.now(),
+        weeklyRecords: <Records>[]
+      ),
+      child:*/
 
-    final weeklyHistory = Provider.of<WeeklyHistory>(context);
-    
-
-    return SafeArea(
-      child: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            ChartCard(),
-            HistoryListContainer(),
-          ],
+    return ChangeNotifierProvider<WeeklyHistory>(
+      create: (context) => WeeklyHistory(
+        date: DateTime.now(),
+        weeklyRecords: <Records>[]
+      ),
+      child: SafeArea(
+        child: Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              ChartCard(),
+              HistoryListContainer(),
+            ],
+          ),
         ),
       ),
     );
@@ -106,8 +119,7 @@ class _ChartCardState extends State<ChartCard> {
                 ),
                 leftTitles: SideTitles(
                   showTitles: true,
-                  getTextStyles: (context, value) => const TextStyle(
-                      color: Color(0xff7589a2), fontWeight: FontWeight.bold, fontSize: 14),
+                  getTextStyles: (context, value) => const TextStyle(color: Color(0xff7589a2), fontWeight: FontWeight.bold, fontSize: 14),
                   margin: 8,
                   reservedSize: 28,
                   interval: 1,
@@ -135,10 +147,11 @@ class _ChartCardState extends State<ChartCard> {
     // TODO: add parameter "date range" or year-month-week
     List<BarChartGroupData> data = [];
 
-    Random rng = new Random();
+    List<Records> history = Provider.of<WeeklyHistory>(context).weeklyRecords;
+
     for (int day=0; day < 7; day++) {
-      double dailyTotal = rng.nextInt(1500).toDouble() + 1500;
-      double dailyGoal = 2000;
+      double dailyTotal = history[day].progressMl.toDouble();
+      double dailyGoal = history[day].goalMl.toDouble();
       data.add(makeGroupData(day, dailyTotal, dailyGoal));
     }
   
@@ -193,7 +206,8 @@ class WeekController extends StatelessWidget{
               onPressed: () {
                 weeklyHistory.updateDate(CustomDateUtils.backOneWeek(weeklyHistory.date));
                 // get new records
-                // update records
+                Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(weeklyHistory.date)
+                  .then((newHistory) => print("Now we should update local records with" + newHistory.toString()));
               },
             ),
           ),
@@ -204,7 +218,7 @@ class WeekController extends StatelessWidget{
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: Text(
-                  CustomDateUtils.formatWeekRange(weeklyHistory.date),
+                  CustomDateUtils.formatWeekRange(Provider.of<WeeklyHistory>(context).date),
                     style: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -221,6 +235,10 @@ class WeekController extends StatelessWidget{
               color: Colors.white,
               onPressed: () {
                 weeklyHistory.updateDate(CustomDateUtils.forwardOneWeek(weeklyHistory.date));
+                // get new records
+                Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(weeklyHistory.date)
+                  .then((newHistory) => Provider.of<WeeklyHistory>(context, listen: false).updateWeeklyHistory(newHistory));
+                // update records
                 //Provider.of<StatsDate>(context, listen: false).forwardOneWeek();
               }, 
             ),
@@ -237,9 +255,16 @@ class WeekController extends StatelessWidget{
       firstDate: DateTime(2019, 1),
       lastDate: DateTime(2100)
     );
-    if (picked != null && picked != Provider.of<WeeklyHistory>(context, listen: false).date) {
-      Provider.of<WeeklyHistory>(context, listen: false).updateDate(picked);
-      Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(picked);
+    //if (picked != null && picked != Provider.of<WeeklyHistory>(context, listen: false).date) {
+    if (picked != null) {
+      //Provider.of<WeeklyHistory>(context, listen: false).updateDate(picked);
+      // get new records
+      Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(picked)
+        .then((newHistory) => Provider.of<WeeklyHistory>(context, listen:false).updateWeeklyHistory(newHistory))
+        .catchError((error) => print("houston, we have a problem:" + error));
+        // ATTUALE PROBLEMA: UPDATE WEEKLY HISTORY NON AGGIORNA GLI ALTRI WEEKLY HISTORY
+        // PROBABILMENTE È colpa di future provider (che non viene aggiornato)
+
       //Provider.of<StatsDate>(context, listen: false).date = picked;
     }
   }
@@ -255,7 +280,6 @@ class HistoryListContainer extends StatelessWidget {
     return Expanded(
       child: Container(
         child: HistoryList( 
-          // qui serve un change notifier provider che fornisca i record della data selezionata al widget
           history: history,
           onRecordDeleted: (Record record) => history.remove(record.id),
           onRecordUpdated: (Record oldRecord, Record updatedRecord) => history.updateRecord(oldRecord.id, updatedRecord),

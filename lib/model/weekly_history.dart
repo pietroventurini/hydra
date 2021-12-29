@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hydra/model/records.dart';
 import 'package:hydra/util/date_utils.dart';
@@ -49,10 +50,10 @@ class WeeklyHistory extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateWeeklyHistory(DateTime newDate, List<Records> weeklyRecords) {
+  void updateWeeklyHistory(WeeklyHistory history) {
     assert (weeklyRecords.length <= 7, "weekly records length must be <= 7");
-    this.date = newDate;
-    this.weeklyRecords = _expandToSevenDays(weeklyRecords);
+    this.date = history.date;
+    this.weeklyRecords = _expandToSevenDays(history.weeklyRecords);
     notifyListeners();
   }
 
@@ -70,6 +71,19 @@ class WeeklyHistory extends ChangeNotifier {
   Records historyOfSelectedDate() {
     return weeklyRecords[date.weekday-1];
   } 
+
+  factory WeeklyHistory.fromMap(List<Map<String, dynamic>> docs, DateTime selectedDate) {
+
+    List<Records> weeklyRecords = <Records>[];
+
+    docs.forEach((doc) => weeklyRecords.add(Records.fromMap(doc)));
+    weeklyRecords.sort((a,b) => a.date.compareTo(b.date));
+
+    return WeeklyHistory(
+      date: selectedDate,
+      weeklyRecords: weeklyRecords,
+    );
+  }
 
 
 }
