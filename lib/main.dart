@@ -6,8 +6,8 @@ import 'package:hydra/database/repository.dart';
 import 'package:hydra/home.dart';
 import 'package:hydra/login.dart';
 import 'package:hydra/model/records.dart';
-import 'package:hydra/model/weekly_history.dart';
 import 'package:hydra/services/authentication_service.dart';
+import 'package:hydra/settings.dart';
 import 'package:hydra/stats.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -49,13 +49,37 @@ class AuthenticationWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final firebaseUser = context.watch<User?>();
-    if (firebaseUser != null) {
-      return MainPage(  
-        title: 'Flutter Demo Home Page',
-        restorationId: 'bottom_navigation_labels_demo'
-      );
+    if (firebaseUser == null) {
+      return LoginPage();
     }
-    return LoginPage();
+
+    // check if it is a new user
+    return FutureBuilder<bool>(
+      future: Repository(FirebaseFirestore.instance).isUserAlreadyRegistered(),
+      builder: (context, snapshot) {
+        /*if (snapshot.connectionState == ConnectionState.done && snapshot.data == true) { // if user already registered redirect to main page
+          return MainPage(  
+            title: 'Flutter Demo Home Page',
+            restorationId: 'bottom_navigation_labels_demo'
+          );
+        } else if (snapshot.connectionState == ConnectionState.done && snapshot.data != true) { // if new user ask him to set daily goal
+          Navigator.push<Map<String, dynamic>>(
+            context, 
+            MaterialPageRoute(builder: (context) => SettingsTab(goalMl: 1500))
+          ).then((value) {
+            if (value?['dailyGoalUpdated'] != true) {
+              return LoginPage();
+            }
+          });*/
+          return MainPage(  
+                title: 'Flutter Demo Home Page',
+                restorationId: 'bottom_navigation_labels_demo'
+              );
+        /*} else {
+          return CircularProgressIndicator();
+        }*/
+      }
+    );
   }
 }
 
@@ -125,14 +149,22 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
     final _labels = List<String>.unmodifiable(["Home", "Stats", "Account"]);
 
     final _screens = List<Widget>.unmodifiable([
-      StreamProvider<Records>(
-        create: (_) => Repository(FirebaseFirestore.instance).todaysRecordsStream(),
-        initialData: Records(
-          date: DateTime.now(),
-          records: <Record>[]
-        ),
-        child: HomeTab(),
-      ),
+      FutureBuilder(
+        future: Repository(FirebaseFirestore.instance).initializeDailyHistory(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return StreamProvider<Records>(
+              create: (_) => Repository(FirebaseFirestore.instance).todaysRecordsStream(),
+              initialData: Records(
+                date: DateTime.now(),
+                records: <Record>[]
+              ),
+              child: HomeTab(),
+            );
+          } else {
+            return CircularProgressIndicator();
+          }
+        }),
       StatsTab(),
       AccountTab(),
     ]);

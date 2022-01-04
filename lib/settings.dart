@@ -56,7 +56,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
     final cancelBtn = ElevatedButton(
       onPressed: () {
-        Navigator.pop(context);
+        Navigator.pop(context, {"dailyGoalUpdated" : false});
       },
       child: const Text("Cancel"),
     );
@@ -77,10 +77,10 @@ class _SettingsTabState extends State<SettingsTab> {
           .updateDailyGoalMl(_goalMl.toInt())
           .then((value) {
             ScaffoldMessenger.of(context).showSnackBar(successSnackBar);
-            Navigator.pop(context);
+            Navigator.pop(context, {"dailyGoalUpdated": true});
           })
           .catchError((error) {
-            ScaffoldMessenger.of(context).showSnackBar(errorSnackBar);
+            ScaffoldMessenger.of(context,).showSnackBar(errorSnackBar);
           });
       },
       child: const Text("Save"),

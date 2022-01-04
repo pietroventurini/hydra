@@ -155,6 +155,7 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                     value: _amount,
                     min: 0,
                     max: 1000,
+                    divisions: 200,
                     onChanged: (double value) { 
                       setState(() => _amount = value);
                     },

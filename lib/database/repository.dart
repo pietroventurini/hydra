@@ -15,8 +15,8 @@ class Repository {
   Repository(this._firestore);
 
   Stream<Records> todaysRecordsStream() {
-    //DateTime now = DateTime.now();
-    DateTime now = DateTime(2021, 12, 12); //FIXME
+    DateTime now = DateTime.now();
+    //DateTime now = DateTime(2021, 12, 12); //FIXME
     String formattedDate = DateFormat('yyyyMMdd').format(now);
 
     return _firestore.collection('users')
@@ -168,6 +168,33 @@ class Repository {
     }
   }
 
+  Future<void> initializeDailyHistory() async{
+    DateTime now = DateTime.now();
+    String todaysDocId = DateFormat('yyyyMMdd').format(now);
+
+    DocumentSnapshot<Map<String, dynamic>> doc = await _firestore.collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .get();
+
+    Map<String, dynamic>? jsonData = doc.data();
+
+    if (jsonData?['goal_ml'] == null) {
+      await _firestore.collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({'goal_ml': 1500}, SetOptions(merge: true));
+    }
+
+    await _firestore.collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .collection('records')
+      .doc(todaysDocId)
+      .set({
+        "goal_ml": jsonData?['goal_ml'] ?? 1500,
+        "progress_ml": FieldValue.increment(0),
+        "date": now,
+      }, SetOptions(merge: true));
+  }
+
 
   Future<void> updateDailyGoalMl(int goalMl) async {
     DateTime now = DateTime.now();
@@ -200,5 +227,12 @@ class Repository {
     Map<String, dynamic>? jsonData = doc.data();
 
     return jsonData != null ? jsonData['goal_ml'] : 1500;
+  }
+
+  Future<bool> isUserAlreadyRegistered() {
+    return _firestore.collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .get()
+      .then((snapshot) => snapshot.exists);
   }
 }

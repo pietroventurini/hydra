@@ -166,8 +166,8 @@ class Records extends ChangeNotifier {
     int progressMl = data['progress_ml'];
     List<Record> records = <Record>[];
 
-    Map<String, dynamic> firestoreRecords = data['records'];
-    firestoreRecords.forEach((k,r) => {
+    Map<String, dynamic>? firestoreRecords = data['records'];
+    firestoreRecords?.forEach((k,r) => {
       records.add(Record(
         id: k,
         timestamp: r['time']?.toDate(),

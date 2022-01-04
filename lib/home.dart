@@ -73,7 +73,7 @@ class HomeTab extends StatelessWidget {
                 width: 100,
                 height: 100,
                 child: CircularProgressIndicator(
-                  value: 0.3,
+                  value: history.goalMl != 0 ? history.progressMl / history.goalMl : 0,
                   strokeWidth: 10.0,
                   backgroundColor: Colors.black12,
                 ),
