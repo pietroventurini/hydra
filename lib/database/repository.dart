@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -53,9 +55,22 @@ class Repository {
       .collection('records')
       .doc(docId)
       .get();
+
     
-    if (!doc.exists) {
-      return Records(date: date, records: <Record>[]); // empty history
+    print("the requestet doc:" + docId);
+    
+    if (!doc.exists) { // create new document
+      print("document does not exist:" + docId);
+      Map<String, dynamic>? userJson = await doc.reference.parent.parent!.get().then((user) => user.data());
+      int goalMl = userJson!["goal_ml"];
+      // create doc
+      Map<String, dynamic> newDocJson = {
+        "date": date,
+        "goal_ml": goalMl,
+        "progress_ml": 0 
+      };
+      doc.reference.set(newDocJson); // load new document
+      return Records(date: date, goalMl: goalMl, progressMl: 0, records: <Record>[]); // empty history
     }
     return Records.fromMap(doc.data());
   }
@@ -67,13 +82,10 @@ class Repository {
       .collection('users')
       .doc(FirebaseAuth.instance.currentUser!.uid)
       .collection('records')
-      .doc(docId).get();
+      .doc(docId)
+      .get();
 
-    // json for a new document which is not already in the db
-    Map<String, dynamic> newDocJson = {
-      "date": r.timestamp,
-      "goal_ml": 0, // get goal from user (set as variable of user)
-    };
+
 
     // json for a new record
     Map<String, dynamic> newRecordJson = {
@@ -88,8 +100,16 @@ class Repository {
     };
 
     Map<String, dynamic> docJson = {};
-    // merge new document (if it doesnt exist yet) with new recordd
+    // merge new document (if it doesnt exist yet) with new record
     if (!doc.exists) {
+      Map<String, dynamic>? userJson = await doc.reference.parent.parent!.get().then((user) => user.data());
+      int goalMl = userJson!["goal_ml"];
+      // json for a new document which is not already in the db
+      Map<String, dynamic> newDocJson = {
+        "date": r.timestamp,
+        "goal_ml": goalMl,
+        "progress_ml": 0,
+      };
       docJson.addAll(newDocJson);
     }
     docJson.addAll(newRecordJson);
@@ -146,5 +166,39 @@ class Repository {
       // add record to newDocument
       return addRecord(updatedRecord);
     }
+  }
+
+
+  Future<void> updateDailyGoalMl(int goalMl) async {
+    DateTime now = DateTime.now();
+    String todaysDocId = DateFormat('yyyyMMdd').format(now);
+
+    // update user-level goal
+    await _firestore.collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .set({
+        "goal_ml": goalMl
+      }, SetOptions(merge: true));
+
+    // update history-level goal
+    return _firestore.collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .collection('records')
+      .doc(todaysDocId)
+      .set({
+        "goal_ml": goalMl,
+        "progress_ml": FieldValue.increment(0),
+        "date": now,
+      }, SetOptions(merge: true));
+  }
+
+  Future<int> getDailyGoal() async{
+    DocumentSnapshot<Map<String, dynamic>> doc = await _firestore.collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .get();
+
+    Map<String, dynamic>? jsonData = doc.data();
+
+    return jsonData != null ? jsonData['goal_ml'] : 1500;
   }
 }

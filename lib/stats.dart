@@ -207,7 +207,7 @@ class WeekController extends StatelessWidget{
                 weeklyHistory.updateDate(CustomDateUtils.backOneWeek(weeklyHistory.date));
                 // get new records
                 Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(weeklyHistory.date)
-                  .then((newHistory) => print("Now we should update local records with" + newHistory.toString()));
+                  .then((newHistory) => Provider.of<WeeklyHistory>(context, listen: false).updateWeeklyHistory(newHistory));
               },
             ),
           ),
@@ -276,14 +276,27 @@ class HistoryListContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Records history = Provider.of<WeeklyHistory>(context).historyOfSelectedDate();
+    WeeklyHistory history = Provider.of<WeeklyHistory>(context);
+    Repository repository = Repository(FirebaseFirestore.instance);
     return Expanded(
       child: Container(
         child: HistoryList( 
-          history: history,
-          onRecordDeleted: (Record record) => history.remove(record.id),
-          onRecordUpdated: (Record oldRecord, Record updatedRecord) => history.updateRecord(oldRecord.id, updatedRecord),
-          onUndoDelete: (Record deletedRecord) => history.add(deletedRecord),
+          history: history.historyOfSelectedDate(),
+          onRecordDeleted: (Record record) { 
+            history.removeRecord(record);
+            // cloud remove
+            repository.removeRecord(record);
+          },
+          onRecordUpdated: (Record oldRecord, Record updatedRecord) {
+            history.updateRecord(oldRecord, updatedRecord);
+            // cloud update (pay attention to record id duplicates if date changes)
+            repository.updateRecord(oldRecord, updatedRecord);
+          },
+          onUndoDelete: (Record deletedRecord) {
+            history.addRecord(deletedRecord);
+            // cloud add
+            repository.addRecord(deletedRecord);
+          },
         ),
       ),
     );

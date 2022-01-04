@@ -93,8 +93,16 @@ class Records extends ChangeNotifier {
 
   //final List<Record> _records = [];
 
+  void _sortRecords({bool ascending: true}) {
+    if (ascending) {
+      records.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    } else {
+      records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    }
+  }
+
   UnmodifiableListView<Record> recordsOf(DateTime date) {
-    records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    _sortRecords();
     return UnmodifiableListView(
       records.where((r) => 
         r.timestamp.year == date.year
@@ -122,7 +130,8 @@ class Records extends ChangeNotifier {
 
   void add(Record record) {
     records.add(record);
-    records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    progressMl += record.quantity.toInt();
+    _sortRecords();
     notifyListeners();
   }
 
@@ -131,25 +140,28 @@ class Records extends ChangeNotifier {
     r.title = record.title;
     r.timestamp = record.timestamp;
     r.quantity = record.quantity;
+    _sortRecords();
     notifyListeners();
   }
 
   Record remove(String id) {
     Record r = records.firstWhere((record) => record.id == id);
     records.remove(r);
+    progressMl -= r.quantity.toInt();
     notifyListeners();
     return r;
   }
 
   void removeAll() {
     records.clear();
+    progressMl = 0;
     notifyListeners();
   }
 
   factory Records.fromMap(Map<String, dynamic>? data) {
     data = data ?? { };
 
-    DateTime date = data['date'].toDate();
+    DateTime date = data['date']?.toDate();
     int goalMl = data['goal_ml'];
     int progressMl = data['progress_ml'];
     List<Record> records = <Record>[];
@@ -158,7 +170,7 @@ class Records extends ChangeNotifier {
     firestoreRecords.forEach((k,r) => {
       records.add(Record(
         id: k,
-        timestamp: r['time'].toDate(),
+        timestamp: r['time']?.toDate(),
         title: r['title'],
         quantity: r['quantity_ml']
         )

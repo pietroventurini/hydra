@@ -133,18 +133,7 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
         ),
         child: HomeTab(),
       ),
-      // qui dovremmo passare una lista di records (una settimana) invece che un'istanza di record
-      // potremmo creare uno stream in repository che restituisca tale lista con un'apposita query
-      // e usare uno stream provider anche quì
-      // nel momento in cui seleziono un'altra settimana
       StatsTab(),
-      /*ChangeNotifierProvider<WeeklyHistory>(
-        create: (context) => WeeklyHistory(
-          date: DateTime.now(),
-          weeklyRecords: <Records>[]
-        ),
-        child: StatsTab(),
-      ),*/
       AccountTab(),
     ]);
 

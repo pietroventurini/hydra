@@ -70,7 +70,42 @@ class WeeklyHistory extends ChangeNotifier {
 
   Records historyOfSelectedDate() {
     return weeklyRecords[date.weekday-1];
-  } 
+  }
+
+  Records historyOfDate(DateTime date) {
+    return weeklyRecords.firstWhere((e) => DateUtils.isSameDay(e.date, date));
+  }
+
+  bool _isFromSelectedWeek(DateTime date) {
+    DateTime startOfWeek = CustomDateUtils.startOfWeek(this.date);
+    DateTime endOfWeek = CustomDateUtils.endOfWeek(this.date);
+    return date.isAfter(startOfWeek) && date.isBefore(endOfWeek);
+  }
+
+  void removeRecord(Record record) {
+    if (_isFromSelectedWeek(record.timestamp)) {
+      historyOfDate(record.timestamp).remove(record.id);
+    }
+    notifyListeners();
+  }
+
+  void updateRecord(Record oldRecord, Record newRecord) {
+    if (_isFromSelectedWeek(newRecord.timestamp) && _isFromSelectedWeek(oldRecord.timestamp)) {
+      removeRecord(oldRecord);
+      addRecord(newRecord);
+    } else if (_isFromSelectedWeek(oldRecord.timestamp)) {
+      removeRecord(oldRecord);
+    }
+    notifyListeners();
+  }
+
+  void addRecord(Record record) {
+    if (_isFromSelectedWeek(record.timestamp)) {
+      historyOfDate(record.timestamp).add(record);
+    }
+    notifyListeners();
+  }
+
 
   factory WeeklyHistory.fromMap(List<Map<String, dynamic>> docs, DateTime selectedDate) {
 
