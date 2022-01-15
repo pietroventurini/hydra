@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hydra/model/records.dart';
 import 'package:hydra/newrecord_menu.dart';
 import 'package:intl/intl.dart';
+import 'package:hydra/decorations/card.dart' as Decorations;
+
 
 class HistoryList extends StatelessWidget {
   const HistoryList({
@@ -90,7 +92,10 @@ class RecordItem extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 10),
         padding: EdgeInsets.only(right: 15),
         alignment: Alignment.centerRight,
-        color: Colors.red,
+        decoration: BoxDecoration(
+          gradient: Decorations.redLinearGradient,
+        ),
+        //color: Colors.red,
         child: const Icon(
           Icons.delete_rounded,
           color: Colors.white,
@@ -122,6 +127,12 @@ class RecordItem extends StatelessWidget {
               flex: 2,
               child: Text(
                 DateFormat(DateFormat.HOUR24_MINUTE).format(record.timestamp),
+                style: TextStyle(
+                  fontFamily: 'Avenir',
+                  fontSize: 15,
+                  color: const Color.fromARGB(255, 62, 87, 117),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             Expanded(
@@ -132,6 +143,13 @@ class RecordItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.horizontal(left: Radius.circular(18)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(.1),
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
                   ),
                   padding: EdgeInsets.only(left: 20),
                   height: 60,
@@ -140,7 +158,11 @@ class RecordItem extends StatelessWidget {
                       Flexible(
                         flex: 1,
                         child: Text(
-                          record.quantity.toString() + 'ml'
+                          record.quantity.toString() + 'ml',
+                          style: TextStyle(
+                            fontFamily: 'Avenir',
+                            color: const Color.fromARGB(255, 62, 87, 117),
+                          ),
                         ),
                       ),
                       Flexible(
@@ -152,7 +174,7 @@ class RecordItem extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: 'Avenir',
                               fontSize: 16,
-                              color: Colors.black54,
+                              color: const Color.fromARGB(255, 62, 87, 117),
                               fontWeight: FontWeight.w600,
                             ),
                           ),

@@ -1,10 +1,11 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hydra/account.dart';
 import 'package:hydra/database/repository.dart';
 import 'package:hydra/home.dart';
-import 'package:hydra/login.dart';
+import 'package:hydra/screens/login/login.dart';
 import 'package:hydra/model/records.dart';
 import 'package:hydra/services/authentication_service.dart';
 import 'package:hydra/settings.dart';
@@ -15,6 +16,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await FirebaseMessaging.instance.subscribeToTopic('test');
   runApp(MyApp());
 }
 
@@ -46,6 +48,9 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthenticationWrapper extends StatelessWidget {
+
+  AuthenticationWrapper();
+
   @override
   Widget build(BuildContext context) {
     final firebaseUser = context.watch<User?>();
@@ -57,27 +62,10 @@ class AuthenticationWrapper extends StatelessWidget {
     return FutureBuilder<bool>(
       future: Repository(FirebaseFirestore.instance).isUserAlreadyRegistered(),
       builder: (context, snapshot) {
-        /*if (snapshot.connectionState == ConnectionState.done && snapshot.data == true) { // if user already registered redirect to main page
-          return MainPage(  
+        return MainPage(  
             title: 'Flutter Demo Home Page',
             restorationId: 'bottom_navigation_labels_demo'
           );
-        } else if (snapshot.connectionState == ConnectionState.done && snapshot.data != true) { // if new user ask him to set daily goal
-          Navigator.push<Map<String, dynamic>>(
-            context, 
-            MaterialPageRoute(builder: (context) => SettingsTab(goalMl: 1500))
-          ).then((value) {
-            if (value?['dailyGoalUpdated'] != true) {
-              return LoginPage();
-            }
-          });*/
-          return MainPage(  
-                title: 'Flutter Demo Home Page',
-                restorationId: 'bottom_navigation_labels_demo'
-              );
-        /*} else {
-          return CircularProgressIndicator();
-        }*/
       }
     );
   }
@@ -108,6 +96,17 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
 
   @override
   String? get restorationId => widget.restorationId;
+
+  @override
+  void initState() {
+    super.initState();
+    getToken();
+  }
+
+  getToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("Token: " + token!);
+  }
 
   @override
   void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
@@ -162,7 +161,7 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
               child: HomeTab(),
             );
           } else {
-            return CircularProgressIndicator();
+            return Center(child: CircularProgressIndicator());
           }
         }),
       StatsTab(),
@@ -171,6 +170,7 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
 
     return Scaffold(
       body: _screens[_navIndex.value],
+      backgroundColor: const Color.fromARGB(255, 236, 243, 248),
       bottomNavigationBar: MobileNavBar(
         activeIndex: _navIndex.value,
         icons: icons,
@@ -199,6 +199,11 @@ class MobileNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       showUnselectedLabels: false,
+      selectedItemColor: const Color.fromARGB(255, 62, 87, 117),
+      unselectedItemColor: const Color.fromARGB(180, 62, 87, 117),
+      //type: BottomNavigationBarType.shifting,
+      backgroundColor: const Color.fromARGB(255, 236, 243, 248),
+      
       items: <BottomNavigationBarItem>[
         for (var i = 0; i < icons.length; i++)
           BottomNavigationBarItem(icon: Icon(icons[i]), label: labels[i])

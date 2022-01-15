@@ -15,7 +15,7 @@ class AccountTab extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser!;
     //final user = context.watch<User?>();
 
-    print("UID:" + user.uid);
+    Size size = MediaQuery.of(context).size;
 
     return Center(
       child: Column(
@@ -31,7 +31,12 @@ class AccountTab extends StatelessWidget {
           Text(
             "UID: " + user.uid
           ),
-          ElevatedButton(
+          SizedBox(height: size.height * 0.05),
+          ElevatedButton.icon( // settings button
+            label: Text(
+              "Settings",
+            ),
+            icon: Icon(Icons.settings_rounded),
             onPressed: () {
               Navigator.push(
                 context, 
@@ -43,22 +48,39 @@ class AccountTab extends StatelessWidget {
                         if (snapshot.connectionState == ConnectionState.done) {
                           return SettingsTab(goalMl: snapshot.data);
                         } else {
-                          return CircularProgressIndicator();
+                          return Center(child: CircularProgressIndicator());
                         }
                       }
                     ),
                   );
                 }),
               );
-            }, 
-            child: Text("Settings")
+            },
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              elevation: 2,
+              shape: StadiumBorder(),
+              ),
           ),
-          ElevatedButton(
+          SizedBox(height: size.height * 0.05),
+          ElevatedButton.icon( // logout button
+            label: Text(
+              "Logout",
+            ),
+            icon: Icon(Icons.logout_rounded),
             onPressed: () {
               context.read<AuthenticationService>().signOut();
-            }, 
-            child: Text("sign out")
-          )
+            },
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              elevation: 2,
+              shape: StadiumBorder(),
+              ),
+          ),
         ],
       ),
     );
