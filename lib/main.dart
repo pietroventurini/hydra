@@ -39,7 +39,17 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
-          scaffoldBackgroundColor: const Color(0xfff3f7fb)),
+          scaffoldBackgroundColor: const Color(0xfff3f7fb),
+          fontFamily: 'Avenir',
+          textTheme: TextTheme(
+            headline1: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w600, color: const Color.fromARGB(255, 62, 87, 117)),
+            headline2: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500, color: const Color.fromARGB(255, 62, 87, 117)),
+            headline3: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600, color: const Color.fromARGB(255, 62, 87, 117)),
+            headline4: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w400, color: const Color.fromARGB(255, 171, 186, 214)),
+            bodyText1: TextStyle(color: const Color.fromARGB(255, 62, 87, 117)),
+            bodyText2: TextStyle(fontSize: 16.0, color: const Color.fromARGB(255, 62, 87, 117)),
+          ),
+        ),
         restorationScopeId: 'root',
         home: AuthenticationWrapper(),
       ),

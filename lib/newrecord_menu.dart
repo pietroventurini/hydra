@@ -80,23 +80,29 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: 18),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Text(
-                  widget.edit ? "Edit note" : "Create a new note",
-                  style: TextStyle(
-                    fontFamily: 'Avenir',
-                    fontSize: 22,
-                    color: const Color.fromARGB(255, 62, 87, 117), //Colors.black87,
-                    fontWeight: FontWeight.w900,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 40.0),
+                    child: Text(
+                      widget.edit ? "Edit note" : "Create a new note",
+                      style: TextStyle(
+                        fontFamily: 'Avenir',
+                        fontSize: 26,
+                        color: const Color.fromARGB(255, 62, 87, 117), //Colors.black87,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    width: MediaQuery.of(context).size.width * 0.6,
+                    width: MediaQuery.of(context).size.width * 0.8,
                     child: TextFormField(
                       initialValue: widget.edit ? widget.record!.title : null,
                       decoration: InputDecoration(
@@ -104,57 +110,61 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                           Icons.text_fields,
                           color: Colors.black,
                         ),
-                        hintText: "Choose a Title",
+                        hintText: "Title",
                       ),
                     onChanged: (title) => _title = title,
                     ),
                   ),
                 ),
-                Row(
-                  children: <Widget>[
-                    DateTimeContainer(
-                      child: TextFormField(
-                        controller: dateInputCtrl,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          icon: const Icon(
-                            Icons.calendar_today_rounded,
-                            color: Colors.black,
+                Container(
+                  margin: EdgeInsets.only(top: 20, bottom: 80),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      DateTimeContainer(
+                        child: TextFormField(
+                          controller: dateInputCtrl,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            icon: const Icon(
+                              Icons.calendar_today_rounded,
+                              color: Colors.black,
+                            ),
+                            hintText: "Date",
+                            border: InputBorder.none,
                           ),
-                          hintText: "Date",
-                          border: InputBorder.none,
+                          onTap:() {
+                            FocusScope.of(context).requestFocus(new FocusNode());
+                            _selectDate(context);
+                          },
                         ),
-                        onTap:() {
-                          FocusScope.of(context).requestFocus(new FocusNode());
-                          _selectDate(context);
-                        },
                       ),
-                    ),
-                    DateTimeContainer(
-                      child: TextFormField(
-                        controller: timeInputCtrl,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          icon: const Icon(
-                            Icons.access_time_rounded,
-                            color: Colors.black,
+                      DateTimeContainer(
+                        child: TextFormField(
+                          controller: timeInputCtrl,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            icon: const Icon(
+                              Icons.access_time_rounded,
+                              color: Colors.black,
+                            ),
+                            hintText: "Time",
+                            border: InputBorder.none,
                           ),
-                          hintText: "Time",
-                          border: InputBorder.none,
+                          onTap:() {
+                            FocusScope.of(context).requestFocus(new FocusNode());
+                            _selectTime(context);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Select a valid time";
+                            }
+                            return null;
+                          },
                         ),
-                        onTap:() {
-                          FocusScope.of(context).requestFocus(new FocusNode());
-                          _selectTime(context);
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Select a valid time";
-                          }
-                          return null;
-                        },
-                      ),
-                    ),         
-                  ],
+                      ),         
+                    ],
+                  ),
                 ),
                 Text(
                   _amount.toInt().toString() + " ml",
@@ -169,12 +179,16 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                     setState(() => _amount = value);
                   },
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+                SizedBox(
+                  height: 100,
+                ),
+                ElevatedButton(  
+                  style: ElevatedButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 20),
+                    minimumSize: Size(130,50)
+                  ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // TODO post record to server
-                      // ...
                       final Record newRecord = new Record(
                         id: widget.id,
                         timestamp: new DateTime(
@@ -208,9 +222,9 @@ class DateTimeContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: EdgeInsets.all(10),
       padding: EdgeInsets.symmetric(horizontal: 20),
-      width: MediaQuery.of(context).size.width * 0.38,
+      width: MediaQuery.of(context).size.width * 0.36,
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(29),

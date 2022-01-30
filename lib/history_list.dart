@@ -127,11 +127,9 @@ class RecordItem extends StatelessWidget {
               flex: 2,
               child: Text(
                 DateFormat(DateFormat.HOUR24_MINUTE).format(record.timestamp),
-                style: TextStyle(
-                  fontFamily: 'Avenir',
-                  fontSize: 15,
-                  color: const Color.fromARGB(255, 62, 87, 117),
-                  fontWeight: FontWeight.w700,
+                style: Theme.of(context).textTheme.headline3?.copyWith(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w700
                 ),
               ),
             ),
@@ -158,11 +156,7 @@ class RecordItem extends StatelessWidget {
                       Flexible(
                         flex: 1,
                         child: Text(
-                          record.quantity.toString() + 'ml',
-                          style: TextStyle(
-                            fontFamily: 'Avenir',
-                            color: const Color.fromARGB(255, 62, 87, 117),
-                          ),
+                          "${record.quantity.toString()} ml",
                         ),
                       ),
                       Flexible(
@@ -171,12 +165,7 @@ class RecordItem extends StatelessWidget {
                           margin: EdgeInsets.only(left: 34),
                           child: Text(
                             record.title ?? '',
-                            style: TextStyle(
-                              fontFamily: 'Avenir',
-                              fontSize: 16,
-                              color: const Color.fromARGB(255, 62, 87, 117),
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context).textTheme.headline3
                           ),
                         ),
                       ),

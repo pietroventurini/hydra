@@ -31,7 +31,7 @@ class Repository {
     // FIXME: startOfWeek should be set at 00:00, endOfWeek at 23:59:59
     DateTime startOfWeek = CustomDateUtils.startOfWeek(date);
     DateTime endOfWeek = CustomDateUtils.endOfWeek(date);
-    QuerySnapshot<Map<String, dynamic>> queryResultJson= await _firestore.collection('users')
+    QuerySnapshot<Map<String, dynamic>> queryResultJson = await _firestore.collection('users')
       .doc(FirebaseAuth.instance.currentUser!.uid)
       .collection('records')
       .where("date", 

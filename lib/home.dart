@@ -32,32 +32,21 @@ class HomeTab extends StatelessWidget {
                 children: [
                   Text(
                     "Today's progress",
-                    style: TextStyle(
-                      fontFamily: 'Avenir',
-                      fontSize: 16,
-                      color: const Color.fromARGB(255, 171, 186, 214), //Colors.black54,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: Theme.of(context).textTheme.headline4,
                   ),
                   RichText(
                     text: TextSpan(
-                      style: TextStyle(
-                        fontFamily: 'Avenir',
-                        fontSize: 18,
-                        color: const Color.fromARGB(255, 62, 87, 117), //Colors.black54,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: Theme.of(context).textTheme.headline2,
                       children: <TextSpan>[
                         TextSpan(
                           text: history.progressMl.toString(),
                           style: TextStyle(
                             fontSize: 28,
-                            color: const Color.fromARGB(255, 62, 87, 117), //Colors.black87,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
                         TextSpan(
-                          text: "/" + history.goalMl.toString() + "ml",
+                          text: "/${history.goalMl.toString()} ml",
                         ),
                       ],
                     ),
