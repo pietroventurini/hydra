@@ -16,7 +16,7 @@ class Repository {
 
   Stream<Records> todaysRecordsStream() {
     DateTime now = DateTime.now();
-    //DateTime now = DateTime(2021, 12, 12); //FIXME
+    //DateTime now = DateTime(2021, 12, 12); 
     String formattedDate = DateFormat('yyyyMMdd').format(now);
 
     return _firestore.collection('users')
@@ -28,7 +28,6 @@ class Repository {
   }
 
   Future<WeeklyHistory> weeklyHistoryFromDate(DateTime date) async {
-    // FIXME: startOfWeek should be set at 00:00, endOfWeek at 23:59:59
     DateTime startOfWeek = CustomDateUtils.startOfWeek(date);
     DateTime endOfWeek = CustomDateUtils.endOfWeek(date);
     QuerySnapshot<Map<String, dynamic>> queryResultJson = await _firestore.collection('users')
@@ -130,17 +129,8 @@ class Repository {
   }
 
   Future<void> updateRecord(Record oldRecord, Record updatedRecord) {
-    // problema: se cambia la data cambia anche il documento
-    // forse è meglio richiedere oldRecord e updatedRecord
-    // rimuovere oldRecord dal documento in cui si trova
-    // aggiungere updatedRecord nel nuovo documento (o nello stesso)
-    // N.B. l'id del documento si può calcolare dalla data del record
-    // ma come aggiorno il campo progress_ml?
-    // vedi qui: https://firebase.google.com/docs/firestore/manage-data/add-data#increment_a_numeric_value
-    // update ha un parametro FieldValue.increment
 
     String oldDocId = Records.getDocIdOf(oldRecord);
-    
 
     if (oldRecord.timestamp.year == updatedRecord.timestamp.year
     && oldRecord.timestamp.month == updatedRecord.timestamp.month
@@ -219,7 +209,7 @@ class Repository {
       }, SetOptions(merge: true));
   }
 
-  Future<int> getDailyGoal() async{
+  Future<int> getDailyGoal() async {
     DocumentSnapshot<Map<String, dynamic>> doc = await _firestore.collection('users')
       .doc(FirebaseAuth.instance.currentUser!.uid)
       .get();

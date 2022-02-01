@@ -182,10 +182,14 @@ class _NewRecordMenuState extends State<NewRecordMenu> {
                 SizedBox(
                   height: 100,
                 ),
-                ElevatedButton(  
+                ElevatedButton( 
                   style: ElevatedButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 20),
-                    minimumSize: Size(130,50)
+                    primary: Color.fromARGB(255, 62, 87, 117),
+                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                    textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
+                    elevation: 2,
+                    shape: StadiumBorder(),
+                    minimumSize: Size(130,50),
                   ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {

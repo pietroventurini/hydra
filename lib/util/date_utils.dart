@@ -24,4 +24,9 @@ class CustomDateUtils {
     DateFormat formatter = DateFormat('MMMd');
     return formatter.format(startOfWeek(date)) + ' - ' + formatter.format(endOfWeek(date));
   }
+
+  static String formatMonthDay(DateTime date) {
+    DateFormat formatter = DateFormat('MMMd');
+    return formatter.format(date);
+  }
 }

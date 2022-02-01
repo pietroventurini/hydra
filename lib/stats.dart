@@ -39,6 +39,7 @@ class _StatsTabState extends State<StatsTab> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     ChartCard(),
+                    DatePicked(),
                     HistoryListContainer(),
                   ],
                 ),
@@ -51,6 +52,24 @@ class _StatsTabState extends State<StatsTab> {
       ),
     );
     
+  }
+}
+
+class DatePicked extends StatelessWidget {
+    const DatePicked({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 24.0),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          CustomDateUtils.formatMonthDay(Provider.of<WeeklyHistory>(context).date),
+          style: Theme.of(context).textTheme.headline3,
+        ),
+      ),
+    );
   }
 }
 
@@ -262,8 +281,6 @@ class WeekController extends StatelessWidget{
       Repository(FirebaseFirestore.instance).weeklyHistoryFromDate(picked)
         .then((newHistory) => Provider.of<WeeklyHistory>(context, listen:false).updateWeeklyHistory(newHistory))
         .catchError((error) => print("houston, we have a problem:" + error));
-        // ATTUALE PROBLEMA: UPDATE WEEKLY HISTORY NON AGGIORNA GLI ALTRI WEEKLY HISTORY
-        // PROBABILMENTE È colpa di future provider (che non viene aggiornato)
 
       //Provider.of<StatsDate>(context, listen: false).date = picked;
     }

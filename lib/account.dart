@@ -94,7 +94,7 @@ class AccountTab extends StatelessWidget {
                           textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                           elevation: 2,
                           shape: StadiumBorder(),
-                          ),
+                        ),
                       ),
                       SizedBox(width: 20,),
                       ElevatedButton.icon( // logout button

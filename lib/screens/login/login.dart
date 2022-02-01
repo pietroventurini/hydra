@@ -17,7 +17,7 @@ class LoginPage extends StatelessWidget {
           children: <Widget>[
             Text(
               "HYDRA",
-              style: Theme.of(context).textTheme.headline2 //?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headline2,
             ),
             SizedBox(height: size.height * 0.05),
             SvgPicture.asset(

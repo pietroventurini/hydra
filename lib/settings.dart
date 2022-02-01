@@ -28,18 +28,16 @@ class _SettingsTabState extends State<SettingsTab> {
     final goalMlSlider = Container(
       child: Column(
         children: [
-          Text(
-            "Set your daily goal",
-            style: TextStyle(
-              fontFamily: 'Avenir',
-              fontSize: 16,
-              color: Colors.black54,
-              fontWeight: FontWeight.w400,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 35.0),
+            child: Text(
+              "Set your daily goal",
+              style: Theme.of(context).textTheme.headline1,
             ),
           ),
           Text(
-            _goalMl.toInt().toString() + " ml",
-            style: Theme.of(context).textTheme.headline5
+            "${_goalMl.toInt().toString()} ml",
+            style: Theme.of(context).textTheme.headline6
           ),
           Slider(
             min: 0,
@@ -55,6 +53,13 @@ class _SettingsTabState extends State<SettingsTab> {
     ); 
 
     final cancelBtn = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        primary: Color.fromARGB(255, 62, 87, 117),
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        elevation: 2,
+        shape: StadiumBorder(),
+      ),
       onPressed: () {
         Navigator.pop(context, {"dailyGoalUpdated" : false});
       },
@@ -62,6 +67,13 @@ class _SettingsTabState extends State<SettingsTab> {
     );
 
     final saveBtn = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        primary: Color.fromARGB(255, 62, 87, 117),
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        elevation: 2,
+        shape: StadiumBorder(),
+        ),
       onPressed: () {
         const successSnackBar = SnackBar(
           content: Text('Goal Updated'),
@@ -87,26 +99,30 @@ class _SettingsTabState extends State<SettingsTab> {
     );
 
     final buttons = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         cancelBtn, 
         saveBtn
       ],
     );
 
-    return Center(
-        child: Container(
-          height: 300,
-          width: double.infinity,
-          decoration: Decorations.cardDecoration,
-          child: Center(
-            child: Column(
-              children: [
-                goalMlSlider,
-                buttons
-              ],
-            ),
+    return SafeArea(
+      child: Container(
+        margin: EdgeInsets.all(14.0),
+        height: 400,
+        width: double.infinity,
+        decoration: Decorations.getCardDecoration(gradient: Decorations.whiteLinearGradient),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              goalMlSlider,
+              buttons
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 }

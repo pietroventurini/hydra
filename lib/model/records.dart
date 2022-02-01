@@ -34,63 +34,6 @@ class Records extends ChangeNotifier {
     required this.records
   });
 
-
-  /*Records({
-    required this.date,
-    required this.goalMl,
-    required this.progressMl,
-    required this.records,
-  });
-
-  DateTime date;
-  int goalMl;
-  int progressMl;
-  List<Record> records;*/
-
-
-  static final _records = <Record>[
-    Record(
-      id: '1',
-      title: 'Breakfast',
-      timestamp: DateTime(2021, 12, 7, 9, 11),
-      quantity: 220,
-    ),
-    Record(
-      id: '2',
-      timestamp: DateTime(2021, 12, 7, 11, 23),
-      quantity: 250,
-    ),
-    Record(
-      id: '3',
-      title: 'Lunch',
-      timestamp: DateTime(2021, 12, 7, 12, 00),
-      quantity: 500,
-    ),
-    Record(
-      id: '4',
-      title: 'Orange juice',
-      timestamp: DateTime(2021, 12, 7, 15, 55),
-      quantity: 220,
-    ),
-    Record(
-      id: '5',
-      title: 'Workout',
-      timestamp: DateTime(2021, 12, 7, 17, 30),
-      quantity: 500,
-    ),
-    Record(
-      id: '6',
-      title: 'Dinner',
-      timestamp: DateTime(2021, 12, 7, 19, 46),
-      quantity: 300,
-    ),
-    Record(
-      id: '7',
-      timestamp: DateTime(2021, 12, 7, 21, 30),
-      quantity: 220,
-    ),
-  ];
-
   //final List<Record> _records = [];
 
   void _sortRecords({bool ascending: true}) {

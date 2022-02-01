@@ -41,6 +41,10 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           scaffoldBackgroundColor: const Color(0xfff3f7fb),
           fontFamily: 'Avenir',
+          /*sliderTheme: SliderThemeData(
+            activeTrackColor: const Color.fromARGB(255, 62, 87, 117),
+            thumbColor: const Color.fromARGB(255, 62, 87, 117)
+          ),*/
           textTheme: TextTheme(
             headline1: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w600, color: const Color.fromARGB(255, 62, 87, 117)),
             headline2: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500, color: const Color.fromARGB(255, 62, 87, 117)),
@@ -142,12 +146,6 @@ class _MainPageState extends State<MainPage> with RestorationMixin {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
 
     final icons = List<IconData>.unmodifiable([
       Icons.home_rounded,
